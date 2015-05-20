@@ -1,2 +1,7 @@
-files/
-.idea
+/files/*
+/cache/*
+
+/vendor/
+
+!/files/.gitkeep
+!/cache/.gitkeep

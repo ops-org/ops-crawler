@@ -1,4 +1,6 @@
-# ops-emc-scrapper
-Projeto em PHP para baixar todos PDFs de EMCs disponíveis no site da câmara.
+# ops-crawler-rh
+Responsável por baixar todos PDFs das proposições disponíveis no site [camara.org.br](http://www.camara.gov.br/proposicoesWeb/prop_arvore_tramitacoes?idProposicao=562615).
 
-Para executar, no seu console rode `php cli-download.php` os arquivos gerados serão salvos na pasta "files"
+Para executá-lo, simplesmente execute:
+
+    php download.php
