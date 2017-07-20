@@ -1,0 +1,16 @@
+{
+  "name": "Mr.Crawler teste",
+  "version": "0.0.1",
+  "description": "A single Crawler with socket.io",
+  "dependencies": {
+    "cheerio": "^0.22.0",
+    "express": "4.10.2",
+    "http": "0.0.0",
+    "pg": "^6.1.0",
+    "socket.io": "1.2.0"
+  },
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  }
+}
