@@ -25,6 +25,6 @@ Responsável por fazer a busca de Secretários Parlamentares por Lotação.
 
 http://www2.camara.leg.br/transparencia/recursos-humanos/quadro-remuneratorio/consulta-secretarios-parlamentares/layouts_transpar_quadroremuner_consultaSecretariosParlamentares
 
-### Instalação
+### Execuçao
 
-Para executá-lo, você precisa instalar o nodejs na sua máquina, executar o comando node crawlerFinal e acessar o endereço: http://127.0.0.1:6161/?contador=0&etapa=1 no seu browser  
+https://mrcrawler.herokuapp.com/  
