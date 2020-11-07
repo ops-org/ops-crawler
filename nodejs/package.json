@@ -1,0 +1,34 @@
+{
+  "name": "ops-crawler",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "cheerio": "*",
+    "crawler": "^1.2.1",
+    "fs": "*",
+    "http": "*",
+    "mysql": "*",
+    "requestify": "*",
+    "url": "*"
+  },
+  "engines": {
+    "node": "*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ops-org/ops-crawler"
+  },
+  "keywords": [
+    "node",
+    "crawler"
+  ],
+  "author": "Cezar Antônio",
+  "contributors": [
+    "Vanderlei Denir"
+  ],
+  "license": "MIT"
+}
