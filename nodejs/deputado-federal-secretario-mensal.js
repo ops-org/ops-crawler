@@ -45,9 +45,11 @@ var remuneracao = function name($, secretario, done) {
 
 	var $tables = $(".remuneracao-funcionario__info");
 
-	if ($tables.length > 0) {
-		$tables.each(function (i, tbody) {
-			var $tbody = $(tbody);
+	var length = $tables.length;
+	if (length > 0) {
+
+		for (let i = 0; i < length; i++) {
+			let $tbody = $($tables[i]);
 			if ($tbody.parent().find('thead>tr>th').eq(0).text() == "Descrição") {
 
 				// 1 - Remuneração Básica
@@ -79,7 +81,7 @@ var remuneracao = function name($, secretario, done) {
 				var valor_vantagens = getValue($tbody, 'Vantagens Indenizatórias');
 				secretario.valor_outros += valor_diarias + valor_auxilios + valor_vantagens;
 			}
-		});
+		};
 
 		// Mês/Ano de Referência/Tipo Folha: 01/2020 -FOLHA NORMAL
 		// Mês/Ano de Referência/Tipo Folha: 01/2020 -FOLHA DE ADIANTAMENTO GRATIFICAÇÃO NATALINA
@@ -115,9 +117,9 @@ var remuneracao = function name($, secretario, done) {
 };
 
 var crawler = new Crawler({
-	maxConnections: 10,
+	maxConnections: 1,
 	// This will be called for each crawled page
-	// rateLimit: 1000,
+	rateLimit: 50,
 	callback: function (error, res, done) {
 		if (error) {
 			console.log(error);
