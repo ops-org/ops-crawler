@@ -4,34 +4,66 @@ var mysql = require("mysql");
 var pool = mysql.createPool({
 	connectionLimit: 10,
 	host: "localhost",
-	port: "13306",
-	user: "root",
+	port: "23306",
+	user: "ops",
 	password: "",
 	database: 'ops'
 });
 
 var secretarios = function name($, id_deputado, done) {
-	$(".secao-conteudo table tbody tr").each(function (i, tr) {
-		var children = $(this).children();
 
-		var secretario = {
-			id_deputado: id_deputado,
-			nome: children.eq(0).text().trim(),
-			cargo: children.eq(2).text().trim(),
-			periodo: children.eq(3).text().trim(),
-			link_remuneracao: children.eq(4).children().attr('href'),
-			em_exercicio: $(this).closest('.table').prev().text().trim().toUpperCase() === 'EM EXERCÍCIO',
+	var $trs = $(".secao-conteudo table tbody tr")
+	var length = $trs.length;
+	if (length > 0) {
+
+		for (let i = 0; i < length; i++) {
+			var children = $($trs[i]).children();
+
+			var secretario = {
+				id_deputado: id_deputado,
+				nome: children.eq(0).text().trim(),
+				cargo: children.eq(1).text().trim(),
+				funcao: children.eq(2).text().trim(),
+				periodo: children.eq(3).text().trim(),
+				link: children.eq(4).children().attr('href'),
+				em_exercicio: $($trs[i]).closest('.table').prev().text().trim().toUpperCase() === 'EM EXERCÍCIO',
+			}
+
+			// crawler.queue({
+			// 	priority: 4,
+			// 	uri: secretario.link_remuneracao + '?ano=2020&mes=10',
+			// 	passo: 'secretario-remuneracao',
+			// 	secretario: secretario
+			// });
+
+			var sqlParams = [
+				secretario.id_deputado,
+				secretario.nome,
+				secretario.cargo,
+				secretario.funcao,
+				secretario.link.replace('https://www.camara.leg.br/transparencia/recursos-humanos/remuneracao/', ''),
+				secretario.periodo,
+				secretario.em_exercicio
+			];
+			var sqlInsertSecretario =
+				"insert into cf_secretario_contratacao " +
+				"(id_cf_deputado, nome, cargo, funcao, link, periodo, em_exercicio) " +
+				"values (?, ?, ?, ?, ?, ?, ?)";
+			pool.query(sqlInsertSecretario, sqlParams, function (error, results, fields) {
+				if (error) {
+					console.log(secretario.link_remuneracao);
+					throw error;
+				}
+		
+				if(length == i+1){
+					done();
+				}
+			});
 		}
-
-		crawler.queue({
-			priority: 4,
-			uri: secretario.link_remuneracao + '?ano=2020&mes=10',
-			passo: 'secretario-remuneracao',
-			secretario: secretario
-		});
-	});
-
-	done();
+	}else{
+		console.log(id_deputado);
+		done();
+	}
 };
 
 var getValue = function ($tbody, text) {
@@ -45,9 +77,11 @@ var remuneracao = function name($, secretario, done) {
 
 	var $tables = $(".remuneracao-funcionario__info");
 
-	if ($tables.length > 0) {
-		$tables.each(function (i, tbody) {
-			var $tbody = $(tbody);
+	var length = $tables.length;
+	if (length > 0) {
+
+		for (let i = 0; i < length; i++) {
+			let $tbody = $($tables[i]);
 			if ($tbody.parent().find('thead>tr>th').eq(0).text() == "Descrição") {
 
 				// 1 - Remuneração Básica
@@ -79,7 +113,7 @@ var remuneracao = function name($, secretario, done) {
 				var valor_vantagens = getValue($tbody, 'Vantagens Indenizatórias');
 				secretario.valor_outros += valor_diarias + valor_auxilios + valor_vantagens;
 			}
-		});
+		};
 
 		// Mês/Ano de Referência/Tipo Folha: 01/2020 -FOLHA NORMAL
 		// Mês/Ano de Referência/Tipo Folha: 01/2020 -FOLHA DE ADIANTAMENTO GRATIFICAÇÃO NATALINA
@@ -130,15 +164,17 @@ var crawler = new Crawler({
 			} else if (res.options.passo == 'secretario-remuneracao') {
 				remuneracao($, res.options.secretario, done);
 			}
-		} else {
+		} else if(res.statusCode != 404){
 			console.log(res.options.uri);
 			console.log(res.statusCode + res.statusMessage);
+			done();
+		}else{
 			done();
 		}
 	}
 });
 crawler.on('request', function (options) {
-	//console.log('Request:' + options.uri);
+	// console.log('Request:' + options.uri);
 });
 crawler.on('drain', function () {
 	console.log(new Date().toJSON() + ' - Done!');
@@ -154,7 +190,7 @@ crawler.on('drain', function () {
 });
 
 console.log(new Date().toJSON() + ' - Start!');
-var sqlDeputados = "select id, nome_parlamentar from cf_deputado where situacao = 'Exercício'";
+var sqlDeputados = "select id, nome_parlamentar from cf_deputado";
 pool.query(sqlDeputados, function (error, results, fields) {
 	if (error) throw error;
 
@@ -163,7 +199,7 @@ pool.query(sqlDeputados, function (error, results, fields) {
 
 		crawler.queue({
 			priority: 5,
-			uri: 'https://www.camara.leg.br/deputados/' + row['id'] + '/pessoal-gabinete?ano=2020',
+			uri: 'https://www.camara.leg.br/deputados/' + row['id'] + '/pessoal-gabinete',
 			id_deputado: parseInt(row['id']),
 			passo: 'lista-secretario'
 		});

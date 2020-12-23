@@ -12,7 +12,7 @@ var pool = mysql.createPool({
 
 var secretarios = function name($, id_senador, done) {
 
-	var $trs = $("#conteudo_transparencia").find("#todos, #efetivos, #comissionados, #terceirizados, #estagiarios").find('tbody tr');
+	var $trs = $("#tabResposta").find('tbody tr');
 	var length = $trs.length;
 	if (length > 0) {
 
@@ -20,17 +20,19 @@ var secretarios = function name($, id_senador, done) {
 			var children = $trs.eq(i).find('td');
 
 			var secretario = {
-				id_senador: id_senador,
 				nome: children.eq(0).text().trim(),
-				funcao: children.eq(1).text().trim(),
-				nome_funcao: children.eq(2).text().trim(),
+				vinculo: children.eq(1).text().trim(),
+				situacao: children.eq(2).text().trim(),
+				admissao: children.eq(3).text().trim(),
+				cargo: children.eq(4).text().trim(),
+				especialidade: children.eq(5).text().trim(),
+				funcao: children.eq(6).text().trim(),
 				link: children.eq(0).find('a').attr('href')
 			}
 
 			crawler.queue({
 				priority: 4,
-				uri: secretario.link,
-				id_senador: id_senador,
+				uri: 'http://www.senado.leg.br/transparencia/rh/servidores/' + secretario.link,
 				secretario: secretario,
 				passo: 'secretario-remuneracao'
 			});
@@ -73,7 +75,7 @@ var remuneracao = function name($, secretario, done) {
 	}
 
 	var sqlParams = [
-		secretario.link.replace('http://www.senado.leg.br/transparencia/rh/servidores/detalhe.asp?fcodigo=', ''),
+		secretario.link.replace('detalhe.asp?fcodigo=', ''),
 		secretario.id_senador,
 		secretario.nome,
 		secretario.funcao,
@@ -87,7 +89,7 @@ var remuneracao = function name($, secretario, done) {
 		secretario.lotacao,			
 	];
 	var sqlInsertSecretario =
-		"insert into sf_secretario_temp " +
+		"insert into sf_secretario_completo " +
 		"(id, id_senador, nome, funcao, nome_funcao, vinculo, situacao, admissao, cargo, padrao, especialidade, lotacao) " +
 		"values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	pool.query(sqlInsertSecretario, sqlParams, function (error, results, fields) {
@@ -142,18 +144,8 @@ crawler.on('drain', function () {
 });
 
 console.log(new Date().toJSON() + ' - Start!');
-var sqlDeputados = "SELECT id, nome FROM sf_senador WHERE ativo = 'S'";
-pool.query(sqlDeputados, function (error, results, fields) {
-	if (error) throw error;
-
-	for (let index = 0; index < results.length; index++) {
-		const row = results[index];
-
-		crawler.queue({
-			priority: 5,
-			uri: 'https://www6g.senado.leg.br/transparencia/sen/' + row['id'] + '/pessoal/?local=gabinete&ano=2020',
-			id_senador: parseInt(row['id']),
-			passo: 'lista-secretario'
-		});
-	}
+crawler.queue({
+	priority: 5,
+	uri: 'http://www.senado.leg.br/transparencia/rh/servidores/nova_consulta.asp?fnome=&fvinculo=&fsituacao=&flotacao=&fcategoria=&fcargo=0&fsimbolo=&ffuncao=0&fadini=&fadfim=&fconsulta=ok&btnsubmit=Pesquisar',
+	passo: 'lista-secretario'
 });
